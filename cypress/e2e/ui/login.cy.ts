@@ -1,16 +1,7 @@
 import login from '../../support/selectors/login.selectors';
-import type { Messages } from '../../support/types';
+import type { CreatedUser, Messages } from '../../support/types';
 
 describe('E2E-02: login validation and rejection', () => {
-  let createdUserId: string | null = null;
-
-  afterEach(() => {
-    if (createdUserId) {
-      cy.deleteUserViaApi(createdUserId);
-      createdUserId = null;
-    }
-  });
-
   it('shows required field messages when submitting with no credentials', () => {
     cy.get('@messages').then((messages: unknown) => {
       const { ui } = messages as Messages;
@@ -23,10 +14,20 @@ describe('E2E-02: login validation and rejection', () => {
     });
   });
 
-  it('rejects a registered user submitting the wrong password', () => {
-    cy.createUserViaApi().then((user) => {
-      createdUserId = user._id;
+  context('with a registered non-admin user', () => {
+    let user: CreatedUser;
 
+    beforeEach(() => {
+      cy.createUserViaApi({ administrador: 'false' }).then((created) => {
+        user = created;
+      });
+    });
+
+    afterEach(() => {
+      cy.deleteUserViaApi(user._id);
+    });
+
+    it('rejects a registered user submitting the wrong password', () => {
       cy.get('@messages').then((messages: unknown) => {
         const { ui } = messages as Messages;
         cy.intercept('POST', '**/login').as('login');
@@ -39,12 +40,8 @@ describe('E2E-02: login validation and rejection', () => {
         cy.location('pathname').should('eq', '/login');
       });
     });
-  });
 
-  it('logs a non admin user in and redirects to the shopping home', () => {
-    cy.createUserViaApi({ administrador: 'false' }).then((user) => {
-      createdUserId = user._id;
-
+    it('logs a non admin user in and redirects to the shopping home', () => {
       cy.intercept('POST', '**/login').as('login');
 
       cy.visit('/login');

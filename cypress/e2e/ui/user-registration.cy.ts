@@ -3,13 +3,10 @@ import adminHome from '../../support/selectors/admin-home.selectors';
 import type { Messages } from '../../support/types';
 
 describe('E2E-01: admin registration and redirect', () => {
-  let createdUserId: string | null = null;
+  let createdUserId: string;
 
   afterEach(() => {
-    if (createdUserId) {
-      cy.deleteUserViaApi(createdUserId);
-      createdUserId = null;
-    }
+    cy.deleteUserViaApi(createdUserId);
   });
 
   it('registers an administrator and lands on the admin home', () => {

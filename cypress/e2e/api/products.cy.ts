@@ -2,14 +2,13 @@ import productsApi from '../../support/api/products.api';
 import { buildProduct } from '../../support/factories/product.factory';
 import { assertContract } from '../../support/utils/contract';
 import productSchema from '../../support/schemas/product.schema';
-import type { Messages } from '../../support/types';
+import type { CreatedProduct, Messages } from '../../support/types';
 
 describe('API-03: product authorization matrix and duplicate handling', () => {
   let adminUserId: string | null = null;
   let adminToken: string;
   let regularUserId: string | null = null;
   let regularToken: string;
-  let productId: string | null = null;
 
   before(() => {
     cy.createUserViaApi({ administrador: 'true' })
@@ -29,13 +28,6 @@ describe('API-03: product authorization matrix and duplicate handling', () => {
       .then((token) => {
         regularToken = token;
       });
-  });
-
-  afterEach(() => {
-    if (productId) {
-      cy.deleteProductViaApi(productId, adminToken);
-      productId = null;
-    }
   });
 
   after(() => {
@@ -69,25 +61,43 @@ describe('API-03: product authorization matrix and duplicate handling', () => {
     });
   });
 
-  it('creates a product with a valid admin token', () => {
-    const product = buildProduct();
+  context('creation', () => {
+    let productId: string;
 
-    cy.get('@messages').then((messages: unknown) => {
-      const { api } = messages as Messages;
-      productsApi.create(product, adminToken).then(({ status, duration, body }) => {
-        expect(status, 'creation status').to.eq(201);
-        expect(duration, 'creation duration').to.be.lessThan(3000);
-        expect(body.message, 'creation message').to.eq(api.created);
-        expect(body._id, 'created product id').to.be.a('string').and.have.length(16);
-        productId = body._id;
+    afterEach(() => {
+      cy.deleteProductViaApi(productId, adminToken);
+    });
+
+    it('creates a product with a valid admin token', () => {
+      const product = buildProduct();
+
+      cy.get('@messages').then((messages: unknown) => {
+        const { api } = messages as Messages;
+        productsApi.create(product, adminToken).then(({ status, duration, body }) => {
+          expect(status, 'creation status').to.eq(201);
+          expect(duration, 'creation duration').to.be.lessThan(3000);
+          expect(body.message, 'creation message').to.eq(api.created);
+          expect(body._id, 'created product id').to.be.a('string').and.have.length(16);
+          productId = body._id;
+        });
       });
     });
   });
 
-  it('retrieves the created product by id with the correct contract', () => {
-    cy.createProductViaApi({}, adminToken).then((product) => {
-      productId = product._id;
+  context('with an existing product', () => {
+    let product: CreatedProduct;
 
+    beforeEach(() => {
+      cy.createProductViaApi({}, adminToken).then((created) => {
+        product = created;
+      });
+    });
+
+    afterEach(() => {
+      cy.deleteProductViaApi(product._id, adminToken);
+    });
+
+    it('retrieves the created product by id with the correct contract', () => {
       productsApi.getById(product._id).then(({ status, duration, body }) => {
         expect(status, 'get by id status').to.eq(200);
         expect(duration, 'get by id duration').to.be.lessThan(3000);
@@ -98,15 +108,11 @@ describe('API-03: product authorization matrix and duplicate handling', () => {
         assertContract(body, productSchema);
       });
     });
-  });
 
-  it('rejects creating a product with a duplicate name', () => {
-    cy.createProductViaApi({}, adminToken).then((existing) => {
-      productId = existing._id;
-
+    it('rejects creating a product with a duplicate name', () => {
       cy.get('@messages').then((messages: unknown) => {
         const { api } = messages as Messages;
-        const { _id, ...payload } = existing;
+        const { _id, ...payload } = product;
         productsApi.create(payload, adminToken).then(({ status, duration, body }) => {
           expect(status, 'duplicate name status').to.eq(400);
           expect(duration, 'duplicate name duration').to.be.lessThan(3000);

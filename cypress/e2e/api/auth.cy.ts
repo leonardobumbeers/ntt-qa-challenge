@@ -1,20 +1,21 @@
 import authApi from '../../support/api/auth.api';
-import type { Messages } from '../../support/types';
+import type { CreatedUser, Messages } from '../../support/types';
 
 describe('API-02: authentication', () => {
-  let userId: string | null = null;
+  context('with a registered user', () => {
+    let user: CreatedUser;
 
-  afterEach(() => {
-    if (userId) {
-      cy.deleteUserViaApi(userId);
-      userId = null;
-    }
-  });
+    beforeEach(() => {
+      cy.createUserViaApi().then((created) => {
+        user = created;
+      });
+    });
 
-  it('logs in with valid credentials of an api-created user', () => {
-    cy.createUserViaApi().then((user) => {
-      userId = user._id;
+    afterEach(() => {
+      cy.deleteUserViaApi(user._id);
+    });
 
+    it('logs in with valid credentials of an api-created user', () => {
       cy.get('@messages').then((messages: unknown) => {
         const { api } = messages as Messages;
         authApi
@@ -31,12 +32,8 @@ describe('API-02: authentication', () => {
           });
       });
     });
-  });
 
-  it('rejects a valid email with the wrong password', () => {
-    cy.createUserViaApi().then((user) => {
-      userId = user._id;
-
+    it('rejects a valid email with the wrong password', () => {
       cy.get('@messages').then((messages: unknown) => {
         const { api } = messages as Messages;
         authApi

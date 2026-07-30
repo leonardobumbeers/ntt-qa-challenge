@@ -5,13 +5,10 @@ import userSchema from '../../support/schemas/user.schema';
 import type { Messages } from '../../support/types';
 
 describe('API-01: user registration lifecycle and contract', () => {
-  let userId: string | null = null;
+  let userId: string;
 
   afterEach(() => {
-    if (userId) {
-      cy.deleteUserViaApi(userId);
-      userId = null;
-    }
+    cy.deleteUserViaApi(userId);
   });
 
   it('creates a user with valid unique data', () => {

@@ -4,7 +4,7 @@ import type { CreatedUser, Messages } from '../../support/types';
 
 describe('E2E-03: admin creates a product and finds it in the list', () => {
   let admin: CreatedUser;
-  let createdProductId: string | null = null;
+  let createdProductId: string;
 
   before(() => {
     cy.createUserViaApi({ administrador: 'true' }).then((createdAdmin) => {
@@ -17,10 +17,7 @@ describe('E2E-03: admin creates a product and finds it in the list', () => {
   });
 
   afterEach(() => {
-    if (createdProductId) {
-      cy.getAuthToken(admin).then((token) => cy.deleteProductViaApi(createdProductId!, token));
-      createdProductId = null;
-    }
+    cy.getAuthToken(admin).then((token) => cy.deleteProductViaApi(createdProductId, token));
   });
 
   after(() => {
