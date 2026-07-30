@@ -9,10 +9,8 @@ Written in TypeScript throughout, including a global `Cypress.Chainable` augment
 custom command (`cypress/support/index.d.ts`), so specs and commands get full autocomplete and
 type-checking rather than untyped `any` chains.
 
-<!-- Update the org/repo path below once this project is pushed to its GitHub remote. -->
-
-[![CI](https://github.com/<github-user>/ntt-qa-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/<github-user>/ntt-qa-challenge/actions/workflows/ci.yml)
-![Cypress](https://img.shields.io/badge/cypress-14-04C38E?logo=cypress)
+[![CI](https://github.com/leonardobumbeers/ntt-qa-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/leonardobumbeers/ntt-qa-challenge/actions/workflows/ci.yml)
+![Cypress](https://img.shields.io/badge/cypress-15-04C38E?logo=cypress)
 ![ServeRest](https://img.shields.io/badge/tested%20on-serverest.dev-orange)
 
 ## Prerequisites
