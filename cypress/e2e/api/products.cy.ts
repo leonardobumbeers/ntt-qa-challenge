@@ -9,6 +9,7 @@ describe('API-03: product authorization matrix and duplicate handling', () => {
   let adminToken: string;
   let regularUserId: string | null = null;
   let regularToken: string;
+  let productId: string | null = null;
 
   before(() => {
     cy.createUserViaApi({ administrador: 'true' })
@@ -28,6 +29,13 @@ describe('API-03: product authorization matrix and duplicate handling', () => {
       .then((token) => {
         regularToken = token;
       });
+  });
+
+  afterEach(() => {
+    if (productId) {
+      cy.deleteProductViaApi(productId, adminToken);
+      productId = null;
+    }
   });
 
   after(() => {
@@ -61,47 +69,63 @@ describe('API-03: product authorization matrix and duplicate handling', () => {
     });
   });
 
-  it('creates, retrieves and rejects a duplicate product name, then deletes it', () => {
+  it('creates a product with a valid admin token', () => {
     const product = buildProduct();
-    let productId: string;
 
     cy.get('@messages').then((messages: unknown) => {
       const { api } = messages as Messages;
+      productsApi.create(product, adminToken).then(({ status, duration, body }) => {
+        expect(status, 'creation status').to.eq(201);
+        expect(duration, 'creation duration').to.be.lessThan(3000);
+        expect(body.message, 'creation message').to.eq(api.created);
+        expect(body._id, 'created product id').to.be.a('string').and.have.length(16);
+        productId = body._id;
+      });
+    });
+  });
 
-      productsApi
-        .create(product, adminToken)
-        .then(({ status, duration, body }) => {
-          expect(status, 'creation status').to.eq(201);
-          expect(duration, 'creation duration').to.be.lessThan(3000);
-          expect(body.message, 'creation message').to.eq(api.created);
-          expect(body._id, 'created product id').to.be.a('string').and.have.length(16);
-          productId = body._id;
+  it('retrieves the created product by id with the correct contract', () => {
+    cy.createProductViaApi({}, adminToken).then((product) => {
+      productId = product._id;
 
-          return productsApi.getById(productId);
-        })
-        .then(({ status, duration, body }) => {
-          expect(status, 'get by id status').to.eq(200);
-          expect(duration, 'get by id duration').to.be.lessThan(3000);
-          expect(body.nome, 'nome').to.eq(product.nome);
-          expect(body.preco, 'preco').to.eq(product.preco);
-          expect(body.descricao, 'descricao').to.eq(product.descricao);
-          expect(body.quantidade, 'quantidade').to.eq(product.quantidade);
-          assertContract(body, productSchema);
+      productsApi.getById(product._id).then(({ status, duration, body }) => {
+        expect(status, 'get by id status').to.eq(200);
+        expect(duration, 'get by id duration').to.be.lessThan(3000);
+        expect(body.nome, 'nome').to.eq(product.nome);
+        expect(body.preco, 'preco').to.eq(product.preco);
+        expect(body.descricao, 'descricao').to.eq(product.descricao);
+        expect(body.quantidade, 'quantidade').to.eq(product.quantidade);
+        assertContract(body, productSchema);
+      });
+    });
+  });
 
-          return productsApi.create(product, adminToken);
-        })
-        .then(({ status, duration, body }) => {
+  it('rejects creating a product with a duplicate name', () => {
+    cy.createProductViaApi({}, adminToken).then((existing) => {
+      productId = existing._id;
+
+      cy.get('@messages').then((messages: unknown) => {
+        const { api } = messages as Messages;
+        const { _id, ...payload } = existing;
+        productsApi.create(payload, adminToken).then(({ status, duration, body }) => {
           expect(status, 'duplicate name status').to.eq(400);
           expect(duration, 'duplicate name duration').to.be.lessThan(3000);
           expect(body.message, 'duplicate name message').to.eq(api.duplicateProduct);
+        });
+      });
+    });
+  });
 
-          return productsApi.remove(productId, adminToken);
-        })
-        .then(({ status, duration, body }) => {
+  it('deletes the created product', () => {
+    cy.createProductViaApi({}, adminToken).then((product) => {
+      cy.get('@messages').then((messages: unknown) => {
+        const { api } = messages as Messages;
+        productsApi.remove(product._id, adminToken).then(({ status, duration, body }) => {
           expect(status, 'delete status').to.eq(200);
           expect(duration, 'delete duration').to.be.lessThan(3000);
           expect(body.message, 'delete message').to.eq(api.deleted);
         });
+      });
     });
   });
 });
