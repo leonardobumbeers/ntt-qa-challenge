@@ -1,8 +1,6 @@
 import tseslint from 'typescript-eslint';
 import cypress from 'eslint-plugin-cypress';
 
-const cypressGlobals = cypress.environments.globals.globals;
-
 export default tseslint.config(
   {
     ignores: ['node_modules/', 'cypress/screenshots/', 'cypress/videos/', 'cypress/downloads/'],
@@ -10,14 +8,12 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     files: ['cypress/**/*.ts', 'cypress.config.ts'],
-    plugins: { cypress },
+    ...cypress.configs.recommended,
     languageOptions: {
+      ...cypress.configs.recommended.languageOptions,
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
-      },
-      globals: {
-        ...cypressGlobals,
       },
     },
     rules: {
