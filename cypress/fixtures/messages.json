@@ -1,0 +1,19 @@
+{
+  "api": {
+    "created": "Cadastro realizado com sucesso",
+    "loginSuccess": "Login realizado com sucesso",
+    "invalidCredentials": "Email e/ou senha inválidos",
+    "emailInUse": "Este email já está sendo usado",
+    "missingToken": "Token de acesso ausente, inválido, expirado ou usuário do token não existe mais",
+    "adminOnly": "Rota exclusiva para administradores",
+    "duplicateProduct": "Já existe produto com esse nome",
+    "deleted": "Registro excluído com sucesso",
+    "passwordRequired": "password é obrigatório"
+  },
+  "ui": {
+    "invalidCredentials": "Email e/ou senha inválidos",
+    "requiredEmail": "Email é obrigatório",
+    "requiredPassword": "Password é obrigatório",
+    "emailInUse": "Este email já está sendo usado"
+  }
+}
