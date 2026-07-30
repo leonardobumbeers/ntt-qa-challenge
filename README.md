@@ -1,17 +1,14 @@
-# ServeRest Cypress Challenge
+# NTT QA Challenge
 
-Automated end-to-end and API test suite for [ServeRest](https://serverest.dev), a public REST API
-and companion frontend built for practicing test automation. This project exercises the frontend at
-[https://front.serverest.dev](https://front.serverest.dev) with three E2E scenarios (user
-registration, login, product management) and the API at [https://serverest.dev](https://serverest.dev)
-with three scenarios (users, authentication, products), using native Cypress resources end to end.
-Written in TypeScript throughout, including a global `Cypress.Chainable` augmentation for every
-custom command (`cypress/support/index.d.ts`), so specs and commands get full autocomplete and
-type-checking rather than untyped `any` chains.
+[![GitHub Actions](https://github.com/leonardobumbeers/ntt-qa-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/leonardobumbeers/ntt-qa-challenge/actions/workflows/ci.yml)
 
-[![CI](https://github.com/leonardobumbeers/ntt-qa-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/leonardobumbeers/ntt-qa-challenge/actions/workflows/ci.yml)
-![Cypress](https://img.shields.io/badge/cypress-15-04C38E?logo=cypress)
-![ServeRest](https://img.shields.io/badge/tested%20on-serverest.dev-orange)
+A TypeScript and Cypress test automation project for [ServeRest](https://serverest.dev). It covers
+end-to-end flows on the [ServeRest frontend](https://front.serverest.dev) and API scenarios for
+users, authentication, and products.
+
+The suite favors native Cypress features, reusable custom commands, isolated test data, and typed
+support utilities. Every custom command extends `Cypress.Chainable`, providing autocomplete and
+type-checking across specs and support code.
 
 ## Prerequisites
 
@@ -23,14 +20,30 @@ type-checking rather than untyped `any` chains.
 ```bash
 npm install
 npm run cy:open          # interactive runner
-npm run test              # everything, headless
-npm run test:api          # API specs only
-npm run test:ui           # UI specs only
-npm run audit:selectors   # discovery gate, outside CI and outside specPattern
+npm run test             # everything, headless
+npm run test:api         # API specs only
+npm run test:ui          # UI specs only
+npm run audit:selectors  # discovery gate, outside CI and specPattern
 npm run lint
 npm run format
-npm run typecheck         # tsc --noEmit
+npm run typecheck        # tsc --noEmit
 ```
+
+## CI/CD with GitHub Actions
+
+The repository has a CI/CD pipeline configured in
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml). It runs automatically for pushes and pull
+requests targeting `main`.
+
+The pipeline:
+
+1. Installs dependencies with `npm ci`.
+2. Runs ESLint and TypeScript type-checking.
+3. Runs the API and UI Cypress suites in parallel.
+4. Uploads Cypress screenshots as GitHub Actions artifacts when a test fails.
+
+This is a test automation repository, so the pipeline provides continuous validation rather than an
+application deployment stage.
 
 ## Project structure
 
